@@ -1,1 +1,1445 @@
-<h1>test</h1>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>附近餐厅</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
+
+      body {
+        background-color: #f5f5f5;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+      }
+
+      .total-count {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .random-button {
+        background: #ff8000;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.2s;
+      }
+
+      .random-button:hover {
+        background: #e67300;
+      }
+
+      .random-button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .restaurant-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px 0;
+      }
+
+      .restaurant-card {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .restaurant-info {
+        padding: 15px;
+      }
+
+      .restaurant-info h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .rating {
+        color: #ff9500;
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      .details,
+      .price-info {
+        display: flex;
+        justify-content: space-between;
+        color: #666;
+        font-size: 12px;
+        margin-bottom: 6px;
+      }
+
+      .sales {
+        color: #666;
+        font-size: 12px;
+      }
+
+      img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="total-count">
+          总共 <span id="restaurant-count">0</span> 家餐厅
+        </div>
+        <button id="random-btn" class="random-button">随机抽取餐厅</button>
+      </div>
+      <div class="restaurant-grid" id="restaurant-container"></div>
+    </div>
+
+    <script>
+      let clickCount = 0;
+      let lastClickTime = 0;
+      let allRestaurants = [];
+      let selectedRestaurants = new Set();
+
+      async function loadRestaurants() {
+        try {
+          const data = [
+            {
+              module_id: null,
+              module_list: [
+                {
+                  module_id: "",
+                  module_list: [
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=978811476229092&poi_id_str=xPI_bDINREx2-4b_k4eE9wI","distance":"63m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/c8001291136c7767e026100d0fc4b612172032.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"xPI_bDINREx2-4b_k4eE9wI","page_show_style":0,"poi_name":"Wagas沃歌斯（新希望中鼎国际店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“非常健康”","text_color":"#ff8000","type":0,"label_id":75,"url":""},{"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"大众点评高分店铺","text_color":"#ff8000","type":0,"label_id":2,"url":""}],"wm_poi_score":5,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥75","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售100+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "xPI_bDINREx2-4b_k4eE9wI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1082423267287259&poi_id_str=cA0E7RUSFIY1JDpeTbpcZwI","distance":"75m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"30分钟","poi_pic":"http://p0.meituan.net/waimaipoi/9a75c31942f524410353dfdf280d208174098.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"cA0E7RUSFIY1JDpeTbpcZwI","page_show_style":0,"poi_name":"肯德基宅急送（中鼎店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“服务也很到位！”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.6,"img_type":1,"shipping_fee_tip":"配送 约¥6","status_desc":"","avg_price_tip":"人均 ¥40","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售700+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "cA0E7RUSFIY1JDpeTbpcZwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=906918018661077&poi_id_str=ot52gsDbucHz6ztg1aqaEQI","distance":"104m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/e6278c928ba7ef4d7e77669f7cd6f798163876.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"ot52gsDbucHz6ztg1aqaEQI","page_show_style":0,"poi_name":"71号豆汤饭·成都小吃（中鼎国际店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领2元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“包装完整”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.9,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥23","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售2000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "ot52gsDbucHz6ztg1aqaEQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=845615950454885&poi_id_str=fXyFCLNVmOnMX_nrOEpHLQI","distance":"141m","ad_type":0,"min_price_tip":"起送 ¥24","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/375abb9afb08226e09976276938f623f1472100.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"fXyFCLNVmOnMX_nrOEpHLQI","page_show_style":0,"poi_name":"瑞可甜心（面包·甜品·中鼎店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"5"},"category_id":5,"kano_style_id":0,"text":"满40得赠品","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“包装完整良好”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.9,"img_type":1,"shipping_fee_tip":"配送 约¥1.5","status_desc":"","avg_price_tip":"人均 ¥38","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售900+","list_style":0,"origin_shipping_fee_tip":"¥2.5","status":1,"status_sub_desc":""}',
+                      data_id: "fXyFCLNVmOnMX_nrOEpHLQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1111873857993423&poi_id_str=xo29ZPnnx4GiG5KgaYVVGAI","distance":"149m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/b091da34014e4119a732605e65d2f035313847.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"xo29ZPnnx4GiG5KgaYVVGAI","page_show_style":0,"poi_name":"煎饼道（中鼎国际店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“分量也足”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.8,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥19","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "xo29ZPnnx4GiG5KgaYVVGAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1099354028346143&poi_id_str=hQV4WWIEr70belst9WsgYwI","distance":"153m","ad_type":0,"min_price_tip":"起送 ¥10","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/b1697b81a396136848560cc13acb745a180664.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"hQV4WWIEr70belst9WsgYwI","page_show_style":0,"poi_name":"COFFEE IS READY（桦彩路店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“很清爽的口感”","text_color":"#ff8000","type":0,"label_id":75,"url":""},{"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"大众点评高分店铺","text_color":"#ff8000","type":0,"label_id":2,"url":""}],"wm_poi_score":5,"img_type":1,"shipping_fee_tip":"配送 约¥1.1","status_desc":"","avg_price_tip":"人均 ¥18","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售100+","list_style":0,"origin_shipping_fee_tip":"¥3.1","status":1,"status_sub_desc":""}',
+                      data_id: "hQV4WWIEr70belst9WsgYwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1116898969734706&poi_id_str=B8TsiRBawQ-Q2sUVxbINKQI","distance":"169m","ad_type":0,"min_price_tip":"起送 ¥18","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/902f42b84e27a12980805a885a85d70b69760.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"B8TsiRBawQ-Q2sUVxbINKQI","page_show_style":0,"poi_name":"李与白包子铺（新希望中鼎国际店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"100"},"category_id":100,"kano_style_id":0,"text":"返2元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"label_rank_info":"4#87806#3#22013100#1#1#1","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"琉璃场包子生煎人气榜第1名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.7,"img_type":1,"shipping_fee_tip":"配送 约¥0.5","status_desc":"","avg_price_tip":"人均 ¥18","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"¥2.5","status":1,"status_sub_desc":""}',
+                      data_id: "B8TsiRBawQ-Q2sUVxbINKQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=987646223949706&poi_id_str=QiFhmJYRUozHfY7ra4uskwI","distance":"192m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/business/e5db682a10802e8ba60bf17d2e47043369619.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"QiFhmJYRUozHfY7ra4uskwI","page_show_style":0,"poi_name":"富·顺·荤·豆·花（金石路店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"label_rank_info":"4#87806#3#22030300#2#1#5","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"琉璃场川菜好评榜第5名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.7,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥36","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售300+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "QiFhmJYRUozHfY7ra4uskwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1069070213929497&poi_id_str=lUHP7pi8dTCGCOQ0kkDPIAI","distance":"195m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/90fb8edafa0c3c608e7eae79350d88e4220713.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"lUHP7pi8dTCGCOQ0kkDPIAI","page_show_style":0,"poi_name":"白螺湾螺蛳粉（中鼎316店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领2元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领4元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领6元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“包装完整良好”","text_color":"#ff8000","type":0,"label_id":75,"url":""},{"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"大众点评高分店铺","text_color":"#ff8000","type":0,"label_id":2,"url":""}],"wm_poi_score":3.7,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥16","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售300+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "lUHP7pi8dTCGCOQ0kkDPIAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=913128541364127&poi_id_str=nYwmRzD0q2QmVOll426juAI","distance":"197m","ad_type":0,"min_price_tip":"起送 ¥0","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/c50193da16ba2a2c45ebcdcb8796ad15235241.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"nYwmRzD0q2QmVOll426juAI","page_show_style":0,"poi_name":"王春春鸡汤饭（成都新希望中鼎店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“包装也很密实”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.8,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥25","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "nYwmRzD0q2QmVOll426juAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=962177067843729&poi_id_str=iVDCZ-xSt3Xv1giw1Sd0qQI","distance":"206m","ad_type":0,"min_price_tip":"起送 ¥0","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/41a28c382b7880257339b7617491dd87158840.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"iVDCZ-xSt3Xv1giw1Sd0qQI","page_show_style":0,"poi_name":"粤饺皇（中鼎店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“孩子非常喜欢”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":5,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥22","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售500+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "iVDCZ-xSt3Xv1giw1Sd0qQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=870410796611735&poi_id_str=zq0umdt4KsPpAYSuEsc0owI","distance":"220m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/waimaipoi/62ba975b97d3fa2238c01622d3fab3ac342377.jpg","badge_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"金牌店铺","text_color":"","type":1,"label_id":155,"url":"http://p0.meituan.net/scarlett/44201eeb2eb545ae0315fe4479adcad24914.png"},"img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"zq0umdt4KsPpAYSuEsc0owI","page_show_style":0,"poi_name":"塔斯汀·中国汉堡（中鼎国际店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“超大一块肉”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.6,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥25","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售4000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "zq0umdt4KsPpAYSuEsc0owI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=865115101977201&poi_id_str=xRhWT89n5iXdPGSjESHrtgI","distance":"247m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/87620699cb4cd3ad3a94b3f5dc59200e888037.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"xRhWT89n5iXdPGSjESHrtgI","page_show_style":0,"poi_name":"到家张醪糟（中鼎国际店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"100"},"category_id":100,"kano_style_id":0,"text":"返5元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“汤也很好喝”","text_color":"#ff8000","type":0,"label_id":75,"url":""},{"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"大众点评高分店铺","text_color":"#ff8000","type":0,"label_id":2,"url":""}],"wm_poi_score":4.5,"img_type":1,"shipping_fee_tip":"配送 约¥2.5","status_desc":"","avg_price_tip":"人均 ¥23","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "xRhWT89n5iXdPGSjESHrtgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1025914382535058&poi_id_str=_zDzMYFT5oVKZarnzIqUGQI","distance":"269m","ad_type":0,"min_price_tip":"起送 ¥0","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/a8ae15dd252806c10ce5453bc1ff82d5552346.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"_zDzMYFT5oVKZarnzIqUGQI","page_show_style":0,"poi_name":"赤虎堂·猛火现炒·盖浇饭（中鼎国际店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“还会购买”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.7,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥23","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "_zDzMYFT5oVKZarnzIqUGQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=877463132921717&poi_id_str=I9elf4K8XTWiKV1v37FUpQI","distance":"271m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/fe59a9a94eeb2c407ae416d2c06f182f227474.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"I9elf4K8XTWiKV1v37FUpQI","page_show_style":0,"poi_name":"袁二姐手工肥肠粉（剁椒拌饭）","delivery_type":1,"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥3.1","status_desc":"","avg_price_tip":"人均 ¥23","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售4","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "I9elf4K8XTWiKV1v37FUpQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=914666139649442&poi_id_str=VV6xIepfz1JqgAzcffMvygI","distance":"339m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/1af49f96bf5fe9d19209eeb0eef2b06a729474.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"VV6xIepfz1JqgAzcffMvygI","page_show_style":0,"poi_name":"吒幺包(生煎·包子·锦华汇融店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥2.5","status_desc":"","avg_price_tip":"人均 ¥16","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售31","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "VV6xIepfz1JqgAzcffMvygI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=903765512620637&poi_id_str=mh7YJRw3bTncn783Dns40gI","distance":"351m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/a73696c8efb6924e3762c122436a1408516958.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"mh7YJRw3bTncn783Dns40gI","page_show_style":0,"poi_name":"牛恭喜砂锅烧菜/花溪牛肉米粉","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥19","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售18","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "mh7YJRw3bTncn783Dns40gI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=933490981295495&poi_id_str=Ko2hNG1c8v2iLALZHPHDewI","distance":"352m","ad_type":0,"min_price_tip":"起送 ¥18","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/a732301c82ffd7d3ee3944ffdd9e4a37267225.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"Ko2hNG1c8v2iLALZHPHDewI","page_show_style":0,"poi_name":"成都酱肉包包子铺（华润时光绘店）","delivery_type":0,"brightspot_tags":[{"view_expose_info":{"label_rank_info":"4#87806#3#22013100#1#1#8","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"琉璃场包子生煎人气榜第8名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4,"img_type":1,"shipping_fee_tip":"配送 约¥0.5","status_desc":"","avg_price_tip":"人均 ¥18","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售90","list_style":0,"origin_shipping_fee_tip":"¥2.5","status":1,"status_sub_desc":""}',
+                      data_id: "Ko2hNG1c8v2iLALZHPHDewI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=870784458794937&poi_id_str=RRrkKQTdwX4YOwN8TpcDvAI","distance":"358m","ad_type":0,"min_price_tip":"起送 ¥18","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/business/7e7fdebff493c3871b769fe31c3311651426696.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"RRrkKQTdwX4YOwN8TpcDvAI","page_show_style":0,"poi_name":"缸煮米杭州小笼包•热粥•撒汤(成都锦江毕昇路店)","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“喜欢的口味”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":3.9,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥19","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售500+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "RRrkKQTdwX4YOwN8TpcDvAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1001858270712755&poi_id_str=D3RuW1r8CWbI_gRFYw04lgI","distance":"393m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/fa4b2de09801a1c79c3636cddfe7fae186277.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"D3RuW1r8CWbI_gRFYw04lgI","page_show_style":0,"poi_name":"沙县小吃(时光绘店)","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“价格划算”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.6,"img_type":1,"shipping_fee_tip":"配送 约¥0.5","status_desc":"","avg_price_tip":"人均 ¥22","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"¥2.5","status":1,"status_sub_desc":""}',
+                      data_id: "D3RuW1r8CWbI_gRFYw04lgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                  ],
+                  render_mode: "mach",
+                  data_type: 0,
+                  json_data: {
+                    page: { has_next_page: true, rank_trace_id: "" },
+                    featureMarkInfo: null,
+                  },
+                  string_data: null,
+                  layout_type: "",
+                  layout_info: "",
+                  layout_slot: null,
+                  view_type: "frame",
+                  url: null,
+                  params: null,
+                },
+              ],
+              render_mode: "native",
+              data_type: 0,
+              json_data: null,
+              string_data: null,
+              layout_type: "viewpager",
+              layout_info: null,
+              layout_slot: null,
+              view_type: "frame",
+              url: null,
+              params: null,
+            },
+            {
+              module_id: null,
+              module_list: [
+                {
+                  module_id: "",
+                  module_list: [
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=914172218421833&poi_id_str=RwCTuhtHrDsATJubs4vnZAI","distance":"407m","ad_type":0,"min_price_tip":"起送 ¥18","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/44089d4cffa78ee9e5d30a262e5b21a31179075.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"RwCTuhtHrDsATJubs4vnZAI","page_show_style":0,"poi_name":"泸州小笼包生椒牛肉面","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"label_rank_info":"4#87806#3#22013100#8#1#3","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"琉璃场包子生煎热销榜第3名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.5,"img_type":1,"shipping_fee_tip":"配送 约¥0.1","status_desc":"","avg_price_tip":"人均 ¥23","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售700+","list_style":0,"origin_shipping_fee_tip":"¥3.1","status":1,"status_sub_desc":""}',
+                      data_id: "RwCTuhtHrDsATJubs4vnZAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1090540755482436&poi_id_str=45IkcVoTQuuj3chWKOgS6QI","distance":"408m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/3e2145f7b2b4f8c356536d7f40ce00c2357996.jpg","badge_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"金牌店铺","text_color":"","type":1,"label_id":155,"url":"http://p0.meituan.net/scarlett/44201eeb2eb545ae0315fe4479adcad24914.png"},"img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"45IkcVoTQuuj3chWKOgS6QI","page_show_style":0,"poi_name":"乡村基（华润时光绘店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“商家出餐快”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.8,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥24","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售4000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "45IkcVoTQuuj3chWKOgS6QI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=990356348287101&poi_id_str=_FMvEKCnT9kGIKVRKWo0sQI","distance":"422m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/b091da34014e4119a732605e65d2f035313847.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"_FMvEKCnT9kGIKVRKWo0sQI","page_show_style":0,"poi_name":"煎饼道（琉璃立交店）","delivery_type":1,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“而且商机也特别好”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.6,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥20","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售800+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "_FMvEKCnT9kGIKVRKWo0sQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=872206092967039&poi_id_str=DToZjIKqevKUg8zf4pv_VgI","distance":"426m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/727b6209bbd04e5cca4fc355d0fe8dce53843.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"DToZjIKqevKUg8zf4pv_VgI","page_show_style":0,"poi_name":"好功夫·煲仔饭（金黄锅巴、时光绘店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“连点两天”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.7,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥23","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "DToZjIKqevKUg8zf4pv_VgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=894376714123643&poi_id_str=xUsEWyzuElydvpxtmz8qEgI","distance":"429m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/3ad7bc8b696309d1742c5859dd41b0181163906.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"xUsEWyzuElydvpxtmz8qEgI","page_show_style":0,"poi_name":"胖丫素椒杂酱面（时光绘店）","delivery_type":1,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"label_rank_info":"2#510100#3#22015500#2#1#2","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"成都炸酱面好评榜第2名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":5,"img_type":1,"shipping_fee_tip":"配送 约¥3.1","status_desc":"","avg_price_tip":"人均 ¥22","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售100+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "xUsEWyzuElydvpxtmz8qEgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=888359464950829&poi_id_str=R5zG5rsaHxvrfDjj9lN5PgI","distance":"440m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/ac7bbcca460b9f92e5f01303b1b7de1997548.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"R5zG5rsaHxvrfDjj9lN5PgI","page_show_style":0,"poi_name":"状元水饺（华润时光绘店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领3元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领4元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领6元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“二次购买”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.6,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥21","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售300+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "R5zG5rsaHxvrfDjj9lN5PgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=939890482562712&poi_id_str=74IT_Fei4ahysOWba34KhgI","distance":"441m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/business/0d20e3699f0d30eb41e7319b5bdc019d267993.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"74IT_Fei4ahysOWba34KhgI","page_show_style":0,"poi_name":"花溪牛羊肉米粉（时光绘店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"label_rank_info":"4#87806#3#22014600#1#1#1","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"琉璃场米粉米线人气榜第1名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.7,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥20","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售2000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "74IT_Fei4ahysOWba34KhgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=904280908703503&poi_id_str=4Ny2V8sqdhZVkiTcJeBmuwI","distance":"449m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/629dab3ac33ec3c95c3d4aa898696905453554.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"4Ny2V8sqdhZVkiTcJeBmuwI","page_show_style":0,"poi_name":"豪吃彦姐·鲜烧牛肉","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥3.1","status_desc":"","avg_price_tip":"人均 ¥37","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售16","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "4Ny2V8sqdhZVkiTcJeBmuwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=864187389017781&poi_id_str=OzE9Z6CSzNrDxNFY_9Cf7wI","distance":"468m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/d69f79ab5d314795f57f3a8685410b0d105991.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"OzE9Z6CSzNrDxNFY_9Cf7wI","page_show_style":0,"poi_name":"子宸什夹婆乌鸡米线（时光绘店）","delivery_type":1,"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“汤底浓郁”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.9,"img_type":1,"shipping_fee_tip":"配送 约¥1.6","status_desc":"","avg_price_tip":"人均 ¥26","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售300+","list_style":0,"origin_shipping_fee_tip":"¥3.1","status":1,"status_sub_desc":""}',
+                      data_id: "OzE9Z6CSzNrDxNFY_9Cf7wI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1022976624926977&poi_id_str=4Qp7m5X4eazh3LExP_YXowI","distance":"486m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/waimaipoi/fb287d70eeb367fb9a30877aa33b999b697547.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"4Qp7m5X4eazh3LExP_YXowI","page_show_style":0,"poi_name":"愚小面（华润时光绘店）","delivery_type":1,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“肉很多量很大”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.4,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥20","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售500+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "4Qp7m5X4eazh3LExP_YXowI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=925729975387904&poi_id_str=kpdITYVhU65m3nyFyEUnigI","distance":"504m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/da6f5b916543d3c0d7d6ba9333d30018832400.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"kpdITYVhU65m3nyFyEUnigI","page_show_style":0,"poi_name":"螺鼎記螺蛳粉（锦华万达店）","delivery_type":1,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"label_rank_info":"3#510104#3#22014800#2#1#2","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"锦江区螺蛳粉好评榜第2名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.8,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥20","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "kpdITYVhU65m3nyFyEUnigI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=968336051007620&poi_id_str=vGbGfAvNzJCMiuGKfqoLSAI","distance":"510m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/2d4c78dbeed620c81a389ad52ff5c703458435.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"vGbGfAvNzJCMiuGKfqoLSAI","page_show_style":0,"poi_name":"兰州牛肉面（炒饭·拌面·水饺）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“送的也快”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.9,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥19","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "vGbGfAvNzJCMiuGKfqoLSAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=939117388478253&poi_id_str=4m1oBoCBH7l9F4BVYGQxcgI","distance":"523m","ad_type":0,"min_price_tip":"起送 ¥0","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/waimaipoi/36a31e1eee587b3dd81d5bc9bd5b2241236256.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"4m1oBoCBH7l9F4BVYGQxcgI","page_show_style":0,"poi_name":"巴味仙面庄(时光绘店)","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“包装完整”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":5,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥19","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "4m1oBoCBH7l9F4BVYGQxcgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1114644111914059&poi_id_str=17gWxCO6fonJad1dnNwpHwI","distance":"523m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/7535e372815a04bbdc4b5bb81f815682206282.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"17gWxCO6fonJad1dnNwpHwI","page_show_style":0,"poi_name":"口口妙鸡汤饭（华润时光绘店）","delivery_type":0,"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥0.5","status_desc":"","avg_price_tip":"人均 ¥28","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售100+","list_style":0,"origin_shipping_fee_tip":"¥2.5","status":1,"status_sub_desc":""}',
+                      data_id: "17gWxCO6fonJad1dnNwpHwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=866047109849126&poi_id_str=DHqhUfZYnrveM-FfVDMX2gI","distance":"541m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/farmer/daf4e5deb2452a64599ac4d37c4b6db7507659.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"DHqhUfZYnrveM-FfVDMX2gI","page_show_style":0,"poi_name":"壹小鲜蹄花抄手","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“这个抄手的个头是真的大”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":5,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥26","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售200+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "DHqhUfZYnrveM-FfVDMX2gI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1084897168425055&poi_id_str=6y5M_-rWObdQkcCYPCLfSQI","distance":"551m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/69ef6eaf106fa10ba469476b77609f1f140577.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"6y5M_-rWObdQkcCYPCLfSQI","page_show_style":0,"poi_name":"重庆鸡汤铺盖面纯手工刀削","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"wm_poi_score":4.5,"img_type":1,"shipping_fee_tip":"配送 约¥3.1","status_desc":"","avg_price_tip":"人均 ¥20","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售300+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "6y5M_-rWObdQkcCYPCLfSQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1078849854501806&poi_id_str=zixgJSNmCyjgRmIYxBf7SgI","distance":"563m","ad_type":0,"min_price_tip":"起送 ¥0","delivery_time_tip":"30分钟","poi_pic":"http://p1.meituan.net/waimaipoi/8b38bc59b2958e1cf0fc025386f0a94a268742.png","badge_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"金牌店铺","text_color":"","type":1,"label_id":155,"url":"http://p0.meituan.net/scarlett/44201eeb2eb545ae0315fe4479adcad24914.png"},"img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"zixgJSNmCyjgRmIYxBf7SgI","page_show_style":0,"poi_name":"麦当劳麦乐送（成都三色路时光绘店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“酸笋脆爽”","text_color":"#ff8000","type":0,"label_id":75,"url":""},{"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"大众点评高分店铺","text_color":"#ff8000","type":0,"label_id":2,"url":""}],"wm_poi_score":4.9,"img_type":1,"shipping_fee_tip":"配送 约¥6","status_desc":"","avg_price_tip":"人均 ¥39","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"¥9","status":1,"status_sub_desc":""}',
+                      data_id: "zixgJSNmCyjgRmIYxBf7SgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1063014310037523&poi_id_str=DJrSPpCszHOosn6OlCh-EAI","distance":"661m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/5c16303cd2c5796fe72dbdfaf80b8d711054622.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"DJrSPpCszHOosn6OlCh-EAI","page_show_style":0,"poi_name":"煦华餐饮","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"label_rank_info":"4#87806#3#22030300#2#1#1","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"琉璃场川菜好评榜第1名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.7,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥18","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售800+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "DJrSPpCszHOosn6OlCh-EAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=905152787089884&poi_id_str=hYdsRHF7b2R1pliOwvAwfgI","distance":"667m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/business/94bfe0bd01b8bf7d3f3e26694d0fb2ea348350.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"hYdsRHF7b2R1pliOwvAwfgI","page_show_style":0,"poi_name":"中国兰州牛肉拉面（锦华路店）","delivery_type":1,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“常点外卖”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.9,"img_type":1,"shipping_fee_tip":"配送 约¥1.1","status_desc":"","avg_price_tip":"人均 ¥23","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"¥3.1","status":1,"status_sub_desc":""}',
+                      data_id: "hYdsRHF7b2R1pliOwvAwfgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1125183961690729&poi_id_str=7EuaV6endnBS34eQSq4xkgI","distance":"730m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/waimaipoi/2e9511f9e3a5b4ac27182af673241d25118262.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"7EuaV6endnBS34eQSq4xkgI","page_show_style":0,"poi_name":"武胜猪肝面","delivery_type":0,"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥3.1","status_desc":"","avg_price_tip":"人均 ¥25","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售28","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "7EuaV6endnBS34eQSq4xkgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                  ],
+                  render_mode: "mach",
+                  data_type: 0,
+                  json_data: {
+                    page: { has_next_page: true, rank_trace_id: "" },
+                    featureMarkInfo: null,
+                  },
+                  string_data: null,
+                  layout_type: "",
+                  layout_info: "",
+                  layout_slot: null,
+                  view_type: "frame",
+                  url: null,
+                  params: null,
+                },
+              ],
+              render_mode: "native",
+              data_type: 0,
+              json_data: null,
+              string_data: null,
+              layout_type: "viewpager",
+              layout_info: null,
+              layout_slot: null,
+              view_type: "frame",
+              url: null,
+              params: null,
+            },
+            {
+              module_id: null,
+              module_list: [
+                {
+                  module_id: "",
+                  module_list: [
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1014000143238000&poi_id_str=afegYdLfYc-aZrSxEBXnPgI","distance":"745m","ad_type":0,"min_price_tip":"起送 ¥18","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/fdf0c841612e2ae20097279d36822b7193785.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"afegYdLfYc-aZrSxEBXnPgI","page_show_style":0,"poi_name":"李与白包子铺（包江桥店）","delivery_type":1,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“包子很好吃”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥0.6","status_desc":"","avg_price_tip":"人均 ¥18","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售100+","list_style":0,"origin_shipping_fee_tip":"¥3.1","status":1,"status_sub_desc":""}',
+                      data_id: "afegYdLfYc-aZrSxEBXnPgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1025394691504594&poi_id_str=RqVc82SfheXhGZ_1sZ18iQI","distance":"745m","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/7d1aa39313e5f634b2ec9c2d364c5fbf130886.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"RqVc82SfheXhGZ_1sZ18iQI","page_show_style":0,"poi_name":"东北大叔·水饺","delivery_type":0,"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥0.5","status_desc":"","avg_price_tip":"人均 ¥18","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售13","list_style":0,"origin_shipping_fee_tip":"¥2.5","status":1,"status_sub_desc":""}',
+                      data_id: "RqVc82SfheXhGZ_1sZ18iQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1049394968785425&poi_id_str=Cgyba6Ces5kdc3CkHjsxwwI","distance":"936m","ad_type":0,"min_price_tip":"起送 ¥25","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/waimaipoi/d70227d0c459b040524d17b15e3e02b9203765.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"Cgyba6Ces5kdc3CkHjsxwwI","page_show_style":0,"poi_name":"万美人川渝凉拌菜·卤味（成都榕声店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"5"},"category_id":5,"kano_style_id":0,"text":"满1得赠品","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“还会再买”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":5,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥25","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售21","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "Cgyba6Ces5kdc3CkHjsxwwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=956022379726331&poi_id_str=9deoz5GjH85CTpNVzZUzjQI","distance":"936m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/96751567021f1825ae34df5dc3bd1f58376198.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"9deoz5GjH85CTpNVzZUzjQI","page_show_style":0,"poi_name":"紫燕百味鸡（榕声店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"label_rank_info":"4#87806#3#22020200#1#1#3","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"琉璃场卤味熟食人气榜第3名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":5,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥27","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售500+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "9deoz5GjH85CTpNVzZUzjQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=922354131140215&poi_id_str=avHn1vNedH-Mnscg4M9TAAI","distance":"955m","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/659297fe8648f7d7380fe9ca1f86112a98070.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"avHn1vNedH-Mnscg4M9TAAI","page_show_style":0,"poi_name":"王氏现捞（榕声路店）","delivery_type":0,"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“回购中！”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.8,"img_type":1,"shipping_fee_tip":"配送 约¥2.5","status_desc":"","avg_price_tip":"人均 ¥28","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售86","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "avHn1vNedH-Mnscg4M9TAAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=946607811430036&poi_id_str=jJcyQ2dHAV7zTZfBcE39LwI","distance":"975m","ad_type":0,"min_price_tip":"起送 ¥18","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/316204dbc7659c0632fa86d1ab12e54b547111.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"jJcyQ2dHAV7zTZfBcE39LwI","page_show_style":0,"poi_name":"泸州小笼包(榕声路包子铺)","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领2元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领4元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"100"},"category_id":100,"kano_style_id":0,"text":"返1元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"label_rank_info":"4#87806#3#22013100#1#1#3","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"琉璃场包子生煎人气榜第3名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.8,"img_type":1,"shipping_fee_tip":"配送 约¥2.19","status_desc":"","avg_price_tip":"人均 ¥17","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售300+","list_style":0,"origin_shipping_fee_tip":"¥3.1","status":1,"status_sub_desc":""}',
+                      data_id: "jJcyQ2dHAV7zTZfBcE39LwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1006982166679750&poi_id_str=QbiIohIA3WRzVXDFmwrZEgI","distance":"1.1km","ad_type":16,"min_price_tip":"起送 ¥0","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/business/dfc4232cfb60925f2f6f1d6662e78969164321.jpg","badge_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"金牌店铺","text_color":"","type":1,"label_id":155,"url":"http://p0.meituan.net/scarlett/44201eeb2eb545ae0315fe4479adcad24914.png"},"img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"QbiIohIA3WRzVXDFmwrZEgI","page_show_style":0,"poi_name":"将相王者•黄焖鸡米饭（锦江Top店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减2","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"label_rank_info":"3#510104#3#22011600#2#1#2","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"锦江区黄焖鸡好评榜第2名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.9,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥24","poi_type_tag":{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0","icon_type":"3"},"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"优选","text_color":"","type":1,"label_id":55,"url":"http://p0.meituan.net/scarlett/807040286f677122fe29ef703baebfe16361.png"},"wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"hostName=set-hlsc-waimai-a-cpsproperty23.mt&appVersion=4.0.0&ad_cj=rTdW-f671Gts02Y5n35YOzQmNgLSU8gU5Pln3aBLQwH6NSWZKghlIkT63-DscY0RwslqQx5CZFynBCYeqzheKuX44doWh9NFjPPPk0J3VQTjbxd6JANzajsLBgFxxhlgs9cp5VMCSK0_XMLz7GbycOz03S_WnR1yOAl6R0SiqsP41--8hDmMukuMXQDZbApTb0PG-HVWdLdOO0O2sn0Xs3BMljHJrSfsAPBLI7x4AyEygley4tybqTJNf2ItpFk&ad_ci=rTdW8_vHhjEhojU1nGkfLCELPQnBMZBA7fhn1KpJQxSnfTDBamw4fxj33OLuZdFFq5Q5GXFVNQP1WnZL4ztUIr304sxRhcR5j-fV2i4uBADjZB56NVszEHxGEgl-0EF27o9g5WAKQs9nAcb64m75dvulhW2IxHhQCVstNxD4vOyvjg&aor_type=0&shopThirdType=22011600&ptPCVRP=0.0&adType=16&ptPCTR=0.0&pos=1&ka=false&mtdpid=F6AF93FC9B52CBF71FD09CE5F34AAB1BA7094D3A590E87C3AE1A360D8D183445&cpsActivityId=0&aor_id=0&shopSecondType=22010000&pattern_type=0&pt_bid_type=0&sver=2&cityLevel=3&categoryCode=0&wmAdBid=0.0&userId=4554760548&bidType=0&secondLevelCityId=510100&ad_v=2&poiApiPageType=0&shopType=0&adidx=7&city_id=510104&tags={\\\\\\\\\\\\\\"adType\\\\\\\\\\\\\\":16,\\\\\\\\\\\\\\"first_level_type\\\\\\\\\\\\\\":0,\\\\\\\\\\\\\\"second_level_type\\\\\\\\\\\\\\":-1,\\\\\\\\\\\\\\"name\\\\\\\\\\\\\\":\\\\\\\\\\\\\\"优选\\\\\\\\\\\\\\",\\\\\\\\\\\\\\"status\\\\\\\\\\\\\\":2}","month_sales_tip":"月售2000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "QbiIohIA3WRzVXDFmwrZEgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1089110531313319&poi_id_str=wcIuiJncj1eyHpOnzmyyoAI","distance":"1.2km","ad_type":0,"min_price_tip":"起送 ¥25","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/ae3eda4f1e58e2cdc2c0d5ac62ccdc12353790.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"wcIuiJncj1eyHpOnzmyyoAI","page_show_style":0,"poi_name":"廖记棒棒鸡(科创凯天店)","delivery_type":1,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减2","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“分量很足”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.5,"img_type":1,"shipping_fee_tip":"配送 约¥0.4","status_desc":"","avg_price_tip":"人均 ¥25","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售74","list_style":0,"origin_shipping_fee_tip":"¥3.6","status":1,"status_sub_desc":""}',
+                      data_id: "wcIuiJncj1eyHpOnzmyyoAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=971046175348510&poi_id_str=vLfwG05c8qPJrkZuwdtvNwI","distance":"1.2km","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/business/7d4838ae578a5dda23b477e20363e0db169008.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"vLfwG05c8qPJrkZuwdtvNwI","page_show_style":0,"poi_name":"川面馆（桂馨路店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“份量很大”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.3,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥20","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售86","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "vLfwG05c8qPJrkZuwdtvNwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1057499572062926&poi_id_str=8q8nhK71XiKfyeFWUWOxOAI","distance":"1.3km","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/business/5280e6f5a662b21795ca61b33430789c1140338.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"8q8nhK71XiKfyeFWUWOxOAI","page_show_style":0,"poi_name":"蜀食一家五馅包（琉璃场店）","delivery_type":1,"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥3.1","status_desc":"","avg_price_tip":"人均 ¥19","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售27","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "8q8nhK71XiKfyeFWUWOxOAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1112041361754611&poi_id_str=OUKS_atbVLy9NwaN6eJBSAI","distance":"1.4km","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/a2aaef0226ecc9c54f45cb8a94fe9bad1392558.png","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"OUKS_atbVLy9NwaN6eJBSAI","page_show_style":0,"poi_name":"楠丰小菜馆（锦江店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"100"},"category_id":100,"kano_style_id":0,"text":"返3元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“还会继续”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.3,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥33","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售400+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "OUKS_atbVLy9NwaN6eJBSAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=950795404525297&poi_id_str=s_e_cCUaVFPAK3mgO4iQNQI","distance":"1.5km","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/05da798fe380cb566c69412c2b15aa43275550.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"s_e_cCUaVFPAK3mgO4iQNQI","page_show_style":0,"poi_name":"华得莱炸鸡汉堡（琉璃店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"label_rank_info":"3#510104#3#22010200#3#1#3","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"锦江区汉堡复购榜第3名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.1,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥23","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "s_e_cCUaVFPAK3mgO4iQNQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=855322576505085&poi_id_str=qlmTAUyFV5KAsRzDvh643wI","distance":"1.6km","ad_type":0,"min_price_tip":"起送 ¥69","delivery_time_tip":"56分钟","poi_pic":"http://p0.meituan.net/xianfu/d905dc8f0fd32c43ffc2c553362784de79410.jpg@watermark=1&&object=L3dkY2Zsb3cvN2RiN2M4NTFjYmVjZDg4MTM1OTZjMTYzOWE2MzQ4MDM0MjY0LnBuZw==&p=8&t=90&x=10&y=10","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"qlmTAUyFV5KAsRzDvh643wI","page_show_style":0,"poi_name":"鹅煮管火宫私家食府代购(锦江区店)","delivery_type":0,"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥12","status_desc":"","avg_price_tip":"人均 ¥164","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售4","list_style":0,"origin_shipping_fee_tip":"¥14","status":1,"status_sub_desc":""}',
+                      data_id: "qlmTAUyFV5KAsRzDvh643wI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=896537082685159&poi_id_str=zmxyAwsJPU7bHc0hZOIJmwI","distance":"1.6km","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p1.meituan.net/business/181de528577a0b422033b85cf4c20ea8556994.png","badge_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"金牌店铺","text_color":"","type":1,"label_id":155,"url":"http://p0.meituan.net/scarlett/44201eeb2eb545ae0315fe4479adcad24914.png"},"img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"zmxyAwsJPU7bHc0hZOIJmwI","page_show_style":0,"poi_name":"浆小白·豆浆夜市（琉璃场店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领3元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"103"},"category_id":103,"kano_style_id":0,"text":"领4元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"100"},"category_id":100,"kano_style_id":0,"text":"返2元券","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“早餐必点”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.6,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥19","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售2000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "zmxyAwsJPU7bHc0hZOIJmwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1043790036441466&poi_id_str=7K49SGNk5MghArKog8zlKgI","distance":"1.7km","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/a2fdfce9a0a20ad2ffacbcded7c836b611584.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"7K49SGNk5MghArKog8zlKgI","page_show_style":0,"poi_name":"荣记乐山甜皮鸭（58神奇空间店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“价廉物美”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":0,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥24","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售13","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "7K49SGNk5MghArKog8zlKgI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1035895886518045&poi_id_str=ICMck_NEG5KuDsOYDsg8hwI","distance":"1.7km","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/f41a269041330137fa14cd238a25d01c406784.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"ICMck_NEG5KuDsOYDsg8hwI","page_show_style":0,"poi_name":"老土桥牛筋面（58神奇空间店）","delivery_type":1,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"wm_poi_score":5,"img_type":1,"shipping_fee_tip":"配送 约¥2.1","status_desc":"","avg_price_tip":"人均 ¥22","wm_poi_id":-100,"delivery_info":{"delivery_type":1,"delivery_icon":"http://p0.meituan.net/tuling/d2aad33c0fc179dbe855a323baef776c4418.png"},"charge_info":"","month_sales_tip":"月售94","list_style":0,"origin_shipping_fee_tip":"¥3.1","status":1,"status_sub_desc":""}',
+                      data_id: "ICMck_NEG5KuDsOYDsg8hwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1010748853000640&poi_id_str=ayH01Yqg7K1VArdEGIxlJwI","distance":"1.7km","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/5cfbc2484c7589dd52e7b65a047ab431413708.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"ayH01Yqg7K1VArdEGIxlJwI","page_show_style":0,"poi_name":"兰州牛肉拉面（58神奇店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"5"},"category_id":5,"kano_style_id":0,"text":"满35得赠品","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"label_rank_info":"3#510104#3#22015200#3#1#3","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"锦江区中式拉面复购榜第3名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.9,"img_type":1,"shipping_fee_tip":"配送 约¥0.83","status_desc":"","avg_price_tip":"人均 ¥22","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售300+","list_style":0,"origin_shipping_fee_tip":"¥2.5","status":1,"status_sub_desc":""}',
+                      data_id: "ayH01Yqg7K1VArdEGIxlJwI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=1030273774378550&poi_id_str=tP6MZkmN6GVED50MXXyCjQI","distance":"1.8km","ad_type":0,"min_price_tip":"起送 ¥20","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/waimaipoi/dcc5e94cb7cf64b5f4fcee173dec029c518500.png","badge_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"金牌店铺","text_color":"","type":1,"label_id":155,"url":"http://p0.meituan.net/scarlett/44201eeb2eb545ae0315fe4479adcad24914.png"},"img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"tP6MZkmN6GVED50MXXyCjQI","page_show_style":0,"poi_name":"德克士(58神奇空间店)","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减1","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"20"},"category_id":20,"kano_style_id":0,"text":"第二份半价","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"label_rank_info":"3#510104#3#22010200#3#1#4","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"锦江区汉堡复购榜第4名","text_color":"#9B7638","type":0,"label_id":78,"url":""},{"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"大众点评高分店铺","text_color":"#ff8000","type":0,"label_id":2,"url":""}],"wm_poi_score":4.6,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥34","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售4000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "tP6MZkmN6GVED50MXXyCjQI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=927413602574184&poi_id_str=YaOK2HrKDhH61eL4GIcwmAI","distance":"1.8km","ad_type":0,"min_price_tip":"起送 ¥15","delivery_time_tip":"25分钟","poi_pic":"http://p0.meituan.net/business/e2d43e1fd840b46b433b9bdaac67a91a398643.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"YaOK2HrKDhH61eL4GIcwmAI","page_show_style":0,"poi_name":"花溪牛肉粉（58神奇空间店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"5"},"category_id":5,"kano_style_id":0,"text":"满42得赠品","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"label_rank_info":"4#87806#3#22014600#3#1#2","activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"http://p1.meituan.net/scarlett/3908116f8d7ca2fee87305e7c58aff0f703.png","background_color":"#FBF5E8","text_icon":"http://p0.meituan.net/scarlett/c9dd513df2d35c4a350c177deccdfbd64850.png","forward_url":"","text":"琉璃场米粉米线复购榜第2名","text_color":"#9B7638","type":0,"label_id":78,"url":""}],"wm_poi_score":4.9,"img_type":1,"shipping_fee_tip":"配送 约¥0","status_desc":"","avg_price_tip":"人均 ¥19","wm_poi_id":-100,"delivery_info":{"delivery_type":4,"delivery_icon":"http://p1.meituan.net/tuling/04be29e0d8d3255969fa4abb6e18c08a5387.png"},"charge_info":"","month_sales_tip":"月售1000+","list_style":0,"origin_shipping_fee_tip":"","status":1,"status_sub_desc":""}',
+                      data_id: "YaOK2HrKDhH61eL4GIcwmAI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                    {
+                      module_id: "openh5_poi_component",
+                      template_id:
+                        "waimai_mach_usercenter_homepage_future_poi_style_1",
+                      template_ph_id: null,
+                      data_type: 1,
+                      json_data: null,
+                      string_data:
+                        '{"style_exp_info":[],"scheme":"https://h5.waimai.meituan.com/waimai/mindex/menu?mtShopId=877102355667475&poi_id_str=s0RQkY67mFrVToiHeXBL2wI","distance":"1.8km","ad_type":0,"min_price_tip":"起送 ¥48","delivery_time_tip":"37分钟","poi_pic":"http://p0.meituan.net/business/67a0e8a3ea77380a07144e125733ca1d80844.jpg","img_style":1,"expand_style_info":{"golden_sign":0},"poi_id_str":"s0RQkY67mFrVToiHeXBL2wI","page_show_style":0,"poi_name":"一酮断糖生酮专门家（锦江店）","delivery_type":0,"coupon_tag":{"text_right_icon":"","background_color":"","text_icon":"","forward_url":"","text":"神券","text_color":"","type":1,"label_id":158,"url":"http://p0.meituan.net/scarlett/7292d67d47b883c8f8fee49dcc332f8f3078.png"},"poi_tags":[{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"22"},"category_id":22,"kano_style_id":0,"text":"新客减2","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false},{"rule_id":0,"corner_radius":["4","4","4","4"],"sub_tags":[{"kano_label_id":65,"view_expose_info":{"activity_id":"20"},"category_id":20,"kano_style_id":0,"text":"第二份半价","text_color":"#FF3333","type":0,"horizontal_padding":"4"}],"border_color":"#FF9999","use_dynamic_border_width":false,"use_specific_margin":false}],"brightspot_tags":[{"view_expose_info":{"activity_type":"0","template_id":"0","entry_item_id":"0"},"text_right_icon":"","background_color":"#FFF8E1","text_icon":"","forward_url":"","text":"“是我喜欢的”","text_color":"#ff8000","type":0,"label_id":75,"url":""}],"wm_poi_score":4.7,"img_type":1,"shipping_fee_tip":"配送 约¥0.5","status_desc":"","avg_price_tip":"人均 ¥69","wm_poi_id":-100,"delivery_info":{"delivery_type":0,"delivery_icon":""},"charge_info":"","month_sales_tip":"月售100+","list_style":0,"origin_shipping_fee_tip":"¥3","status":1,"status_sub_desc":""}',
+                      data_id: "s0RQkY67mFrVToiHeXBL2wI",
+                      render_mode: "native",
+                      layout_info: null,
+                      layout_slot: null,
+                      view_type: "block",
+                      url: null,
+                      params: null,
+                      layout_type: null,
+                    },
+                  ],
+                  render_mode: "mach",
+                  data_type: 0,
+                  json_data: {
+                    page: { has_next_page: true, rank_trace_id: "" },
+                    featureMarkInfo: null,
+                  },
+                  string_data: null,
+                  layout_type: "",
+                  layout_info: "",
+                  layout_slot: null,
+                  view_type: "frame",
+                  url: null,
+                  params: null,
+                },
+              ],
+              render_mode: "native",
+              data_type: 0,
+              json_data: null,
+              string_data: null,
+              layout_type: "viewpager",
+              layout_info: null,
+              layout_slot: null,
+              view_type: "frame",
+              url: null,
+              params: null,
+            },
+          ];
+
+          // Extract all restaurants from the nested structure
+          allRestaurants = [];
+          data.forEach((item) => {
+            if (item.module_list) {
+              item.module_list.forEach((subItem) => {
+                if (subItem.module_list) {
+                  subItem.module_list.forEach((restaurant) => {
+                    if (restaurant.string_data) {
+                      try {
+                        const restaurantData = JSON.parse(
+                          restaurant.string_data
+                        );
+                        allRestaurants.push({
+                          name: restaurantData.poi_name,
+                          rating: restaurantData.wm_poi_score || 0,
+                          deliveryTime: restaurantData.delivery_time_tip,
+                          distance: restaurantData.distance,
+                          shippingFee: restaurantData.shipping_fee_tip,
+                          avgPrice: restaurantData.avg_price_tip,
+                          monthSales: restaurantData.month_sales_tip,
+                          image: restaurantData.poi_pic,
+                        });
+                      } catch (e) {
+                        console.error("Error parsing restaurant data:", e);
+                      }
+                    }
+                  });
+                }
+              });
+            }
+          });
+
+          // Update total count
+          document.getElementById("restaurant-count").textContent =
+            allRestaurants.length;
+
+          // Display restaurants
+          displayRestaurants(allRestaurants);
+        } catch (error) {
+          console.error("Error loading restaurants:", error);
+        }
+      }
+
+      function displayRestaurants(restaurants) {
+        const restaurantContainer = document.getElementById(
+          "restaurant-container"
+        );
+        restaurantContainer.innerHTML = "";
+
+        restaurants.forEach((restaurant) => {
+          const card = document.createElement("div");
+          card.className = "restaurant-card";
+          card.innerHTML = `
+                    <img src="${restaurant.image}" alt="${restaurant.name}" onerror="this.src='https://via.placeholder.com/150'">
+                    <div class="restaurant-info">
+                        <h3>${restaurant.name}</h3>
+                        <div class="rating">⭐ ${restaurant.rating}</div>
+                        <div class="details">
+                            <span>${restaurant.deliveryTime}</span>
+                            <span>${restaurant.distance}</span>
+                        </div>
+                        <div class="price-info">
+                            <span>${restaurant.shippingFee}</span>
+                            <span>${restaurant.avgPrice}</span>
+                        </div>
+                        <div class="sales">${restaurant.monthSales}</div>
+                    </div>
+                `;
+          restaurantContainer.appendChild(card);
+        });
+      }
+
+      function selectRandomRestaurant() {
+        const currentTime = Date.now();
+
+        // Check if 1 minute has passed since first click
+        if (currentTime - lastClickTime > 60000) {
+          clickCount = 0;
+          selectedRestaurants.clear();
+        }
+
+        // Update click count and time
+        if (clickCount === 0) {
+          lastClickTime = currentTime;
+        }
+
+        if (clickCount >= 3) {
+          alert("已达到抽取次数上限，请等待1分钟后再试");
+          return;
+        }
+
+        // Select random restaurant
+        let availableRestaurants = allRestaurants.filter(
+          (r) => !selectedRestaurants.has(r.name)
+        );
+        if (availableRestaurants.length === 0) {
+          alert("所有餐厅都已被抽取过，请等待1分钟后重试");
+          return;
+        }
+
+        const randomIndex = Math.floor(
+          Math.random() * availableRestaurants.length
+        );
+        const selectedRestaurant = availableRestaurants[randomIndex];
+        selectedRestaurants.add(selectedRestaurant.name);
+
+        // Display only the selected restaurant
+        displayRestaurants([selectedRestaurant]);
+        clickCount++;
+
+        // Update button state
+        const button = document.getElementById("random-btn");
+        button.textContent = `随机抽取餐厅 (剩余${3 - clickCount}次)`;
+
+        if (clickCount >= 3) {
+          button.disabled = true;
+          setTimeout(() => {
+            button.disabled = false;
+            button.textContent = "随机抽取餐厅";
+            clickCount = 0;
+            selectedRestaurants.clear();
+            displayRestaurants(allRestaurants);
+          }, 60000 - (currentTime - lastClickTime));
+        }
+      }
+
+      window.onload = () => {
+        loadRestaurants();
+        document
+          .getElementById("random-btn")
+          .addEventListener("click", selectRandomRestaurant);
+      };
+    </script>
+  </body>
+</html>
